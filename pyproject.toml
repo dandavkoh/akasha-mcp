@@ -19,6 +19,9 @@ dependencies = [
     "typer>=0.15.2",
     "uvicorn>=0.34.0",
     "watchdog>=4.0.0",
+
+    # Debug
+    "debugpy>=1.6.7",
 ]
 
 [project.scripts]
