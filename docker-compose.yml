@@ -1,0 +1,11 @@
+version: "3.9"
+
+services:
+  mcpo-mcp:
+    build: .
+    container_name: mcpo_mcp_stack
+    ports:
+      - "59153:8000"  # Host-Port 59153 -> mcpo Container-Port 8000
+    restart: unless-stopped
+    environment:
+      MCPO_API_KEY: "top-secret"
