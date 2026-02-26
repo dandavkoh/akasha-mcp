@@ -3,10 +3,13 @@ version: "3.9"
 services:
   mcpo-mcp:
     build: .
-    container_name: mcpo_mcp_stack
+    container_name: akasha-mcp
     ports:
       - "59153:8000"  # Host-Port 59153 -> mcpo Container-Port 8000
       - "5678:5678"   # Debug port for VS Code
+    volumes:
+      - "D:/rag-test/nas_docs:/mnt/nas_docs"          # Mount NAS documents
+      - "D:/rag-test/chroma_index:/app/chroma_index"  # Persistent Chroma Index
     restart: unless-stopped
     environment:
-      MCPO_API_KEY: "top-secret"
+      DEV_MODE: "false"
