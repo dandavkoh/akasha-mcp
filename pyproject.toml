@@ -1,31 +1,35 @@
 [project]
 name = "mcpo-mcp-stack"
 version = "0.0.19"
-description = "A simple, secure MCP-to-OpenAPI proxy server with embedded mcp"
+description = "A simple MCP-to-OpenAPI proxy server with embedded mcp"
 authors = [
     { name = "Daniel Kohsyk", email = "daniel.kohsyk@web.de" }
 ]
 readme = "README.md"
 requires-python = ">=3.11"
 dependencies = [
-    "click>=8.1.8",
-    "fastapi>=0.115.12",
-    "mcp>=1.17.0",
-    "mcp[cli]>=1.17.0",
-    "passlib[bcrypt]>=1.7.4",
-    "pydantic>=2.11.1",
-    "pyjwt[crypto]>=2.10.1",
-    "python-dotenv>=1.1.0",
-    "typer>=0.15.2",
-    "uvicorn>=0.34.0",
-    "watchdog>=4.0.0",
+    # core proxy and mcp server
+    "fastapi>=0.111.0,<0.120.0",
+    "uvicorn[standard]>=0.23.0,<1.0.0",
+    "pydantic>=2.3,<3.0",
+    "python-multipart>=0.0.6",
+    "mcp>=0.4.0",
+
+    # RAG / NAS dependencies
+    "sentence-transformers>=2.2.2",
+    "langchain>=0.1.0",
+    "langchain-core>=0.1.0",
+    "langchain-community>=0.0.30",
+    "langchain-text-splitters>=0.0.1",
+    "chromadb>=0.4.0",
+    "docling>=0.1.0",
 
     # Debug
     "debugpy>=1.6.7",
 ]
 
 [project.scripts]
-mcpo = "mcpo:app"
+index-chroma = "akasha_mcp.chroma_index.index_nas:main"
 
 [build-system]
 requires = ["hatchling"]
@@ -33,8 +37,8 @@ build-backend = "hatchling.build"
 
 [tool.hatch.build.targets.wheel]
 packages = [
-    "src/mcpo",
-    "src/mcp"
+    "src/akasha_mcp",
+    "src/mcp_openapi_proxy"
 ]
 
 [dependency-groups]

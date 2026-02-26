@@ -4,30 +4,54 @@
 
 ### Eigenschaften
 
-* ~~**TODO** Lokaler Projekt-Code wird komplett gemountet (`. :/app`)~~
-* Image wird lokal aus dem Dockerfile gebaut
+* **Lokaler Projekt-Code wird live gemountet:** `./src:/app/src`
+* Dev-Dockerfile (`Dockerfile.dev`) wird verwendet
 * **Remote Debugging** via debugpy auf Port 5678
 * Debugger wird vom **Host** (VS Code) an den Container angehängt
+* `DEV_MODE=true` als ENV, um Verhalten im Python-Code zu steuern
 
 ### Voraussetzungen
 
 **Docker Setup:**
+
 * Port `5678` ist exponiert (für debugpy)
+* Docker Compose: `docker-compose.dev.yml` existiert
 
 **VS Code Setup:**
+
 * `.vscode/launch.json` existiert mit Attach-Konfiguration
-* **Python Debugger Extension** (`ms-python.debugpy`) installiert
+* Python Debugger Extension (`ms-python.debugpy`) installiert
 * Optional: Python, Pylance, Docker Extensions
 
 ---
 
-### ▶️ Containerstarten
+### ▶️ Container starten (DEV)
+
+```bash
+docker compose -f docker-compose.dev.yml up -d
+```
+
+**Hinweise:**
+
+* Beim ersten Mal oder bei Dependency-Änderungen `--build` hinzufügen:
+
+```bash
+docker compose -f docker-compose.dev.yml up --build -d
+```
+
+* **Änderungen im Python-Code** in `src/` werden live übernommen → **kein Rebuild nötig**
+
+---
+
+### ▶️ Container starten (PROD)
 
 ```bash
 docker compose -f docker-compose.yml up --build -d
 ```
 
-**Wichtig:** Beim ersten Mal oder bei Dependency-Änderungen `--build` verwenden!
+* Verwendet normales Dockerfile (`Dockerfile`)
+* Kein Mount des `src` Ordners → Code aus Image
+* Build nötig, um Änderungen einzupacken
 
 ---
 
@@ -56,77 +80,57 @@ docker compose -f docker-compose.yml up --build -d
 
 ### 🐛 Debugger anhängen (Remote Debugging)
 
-**Es gibt zwei Varianten:**
+**Variante 1: Vom Host aus debuggen (einfacher)**
 
-#### Variante 1: Vom Host aus debuggen (einfacher)
+1. Container läuft (DEV-Modus)
+2. VS Code auf dem Host öffnen
+3. Run & Debug → Konfiguration `"Attach debugger (DEV)"` auswählen
+4. Starten (F5) → Status-Leiste wird orange → Debugger verbunden
 
-1. **Container läuft** (siehe oben)
-2. **VS Code auf dem Host** öffnen (normales Projektfenster)
-3. **Run & Debug Panel öffnen** (Strg/Cmd + Shift + D)
-4. Konfiguration **"Attach debugger (DEV)"** auswählen
-5. **Start-Button klicken** (F5) oder "Start Debugging"
-6. ✅ Status-Leiste wird orange → Debugger verbunden!
+**Variante 2: Im Container debuggen (nach Attach)**
 
-#### Variante 2: Im Container debuggen (nach Attach)
-
-1. **VS Code an Container anhängen** (siehe oben)
-2. **Im Container-Fenster:** Run & Debug Panel öffnen
-3. Debugger-Konfiguration erstellen oder F5 drücken
-4. Port 5678 auswählen (debugpy)
-5. ✅ Debugger verbunden!
+1. VS Code an Container anhängen (siehe Dev Containers)
+2. Run & Debug Panel öffnen → Debugger starten
+3. Port 5678 auswählen (debugpy) → Debugger verbunden
 
 **Breakpoints setzen:**
 
-1. Öffne z.B. `src/mcp/tools/greeting_tools.py`
-2. Setze Breakpoint (Klick links neben Zeilennummer)
-3. Triggere Codeausschnitt über OpenWebUI oder so
-4. 🎯 **Breakpoint wird getroffen!**
+1. Datei z.B. `src/mcp/tools/greeting_tools.py` öffnen
+2. Breakpoint setzen (links neben Zeilennummer)
+3. Code triggern (OpenWebUI oder MCP API)
+4. 🎯 Breakpoint wird getroffen
 
-**Debug-Features:**
+---
 
-* ✅ Step Over / Step Into / Continue
-* ✅ Variablen inspizieren
-* ✅ Watch Expressions
-* ✅ Call Stack
-* ✅ Debug Console (REPL)
+## 🔧 DEV_MODE im Python-Code
 
-**Debugger stoppen:**
+```python
+import os
 
-* Stopp-Button in VS Code oder Shift+F5
-* Container läuft weiter (debugpy wartet auf nächsten Attach)
+DEV_MODE = os.getenv("DEV_MODE", "false") == "true"
+
+if DEV_MODE:
+    print("Running in DEV mode – live reload enabled")
+```
 
 ---
 
 ## 🧰 VS Code – empfohlene Extensions
 
-### Pflicht (für Remote Debugging)
+**Pflicht (für Remote Debugging)**
 
 ```
-ms-python.python          - Python (IntelliSense, Linting)
-ms-python.vscode-pylance  - Pylance (Type Checking)
-ms-python.debugpy         - Python Debugger (Remote Debugging) ⚡
+ms-python.python
+ms-python.vscode-pylance
+ms-python.debugpy
 ```
 
-### Sehr hilfreich
+**Sehr hilfreich**
 
 ```
-ms-azuretools.vscode-docker        - Docker (Container Management)
-ms-vscode-remote.remote-containers - Dev Containers (optional)
+ms-azuretools.vscode-docker
+ms-vscode-remote.remote-containers
 ```
-
-**Installation:**
-
-1. Öffne VS Code
-2. Extensions Panel (Strg/Cmd + Shift + X)
-3. Suche nach `ms-python.debugpy`
-4. Installiere **Python Debugger**
-
-Diese Extensions ermöglichen:
-
-* ✅ Syntax Highlighting & IntelliSense
-* ✅ Remote Debugging mit Breakpoints
-* ✅ Docker Container Logs & Übersicht
-* ✅ Type Checking & Linting
 
 ---
 
@@ -134,83 +138,67 @@ Diese Extensions ermöglichen:
 
 ### ❌ "Failed to attach" beim Debuggen
 
-**Ursachen:**
+1. Container läuft?
 
-1. Container läuft nicht
-   ```bash
-   docker ps | grep pipelines
-   ```
+```bash
+docker ps | grep mcpo_mcp_stack
+```
 
-2. Debug-Port nicht exponiert
-   ```bash
-   docker port openwebui-pipelines-dev
-   # sollte zeigen: 5678/tcp -> 0.0.0.0:5678
-   ```
+2. Debug-Port offen?
 
-3. debugpy wurde nicht gestartet
-   ```bash
-   docker logs <containername> | grep "Debugger listening"
-   # sollte zeigen: 🧲 Debugger listening on port 5678
-   ```
+```bash
+docker port mcpo_mcp_stack
+# sollte zeigen: 5678/tcp -> 0.0.0.0:5678
+```
+
+3. debugpy gestartet?
+
+```bash
+docker logs mcpo_mcp_stack | grep "Debugger listening"
+```
 
 ---
 
 ### ❌ Breakpoints werden nicht getroffen
 
-**Prüfen:**
+1. `pathMappings` in `.vscode/launch.json` korrekt?
 
-1. **Path Mappings** in `.vscode/launch.json` korrekt?
-   ```json
-   {
-     "version": "0.2.0",
-     "configurations": [
-       {
-        "name": "Attach debugger (DEV)",
-         "type": "debugpy",
-         "request": "attach",
-         "connect": {
-           "host": "localhost",
-           "port": 5678
-         },
-         "pathMappings": [
-           {
-             "localRoot": "${workspaceFolder}",
-             "remoteRoot": "/app"
-           }
-         ]
-       }
-     ]
-   }
-   ```
+```json
+{
+  "localRoot": "${workspaceFolder}/src",
+  "remoteRoot": "/app/src"
+}
+```
 
-2. **Debugger verbunden?** (Orange Status-Leiste in VS Code)
+2. Debugger verbunden (orange Status-Leiste)?
 
 ---
 
 ### ❓ Welcher Code läuft gerade?
 
 ```bash
-# Pipeline-Dateien anzeigen
-docker exec <containername> ls -la /app/src
-
-# Inhalt einer Datei prüfen
-docker exec <containername> cat /app/src/mcp/server.py | head -20
+docker exec mcpo_mcp_stack ls -la /app/src
+docker exec mcpo_mcp_stack cat /app/src/mcp/server.py | head -20
 ```
 
 ---
 
-## 🚀 Quick Start (TL;DR)
+## 🚀 Quick Start
 
-### DEV mit Debugging
+### DEV (mit live code + Debugging)
 
 ```bash
-# 1. Container starten
-docker compose -f docker-compose.yml up --build
+# 1. Container starten (live mount)
+docker compose -f docker-compose.dev.yml up -d
 
-# 2. In VS Code: Run & Debug → "Attach Pipelines (DEV)" → Start (F5)
-# 3. Breakpoints setzen
-# 4. Pipeline triggern
-# 5. 🎯 Debug!
+# 2. In VS Code: Run & Debug → "Attach debugger (DEV)" → F5
+# 3. Breakpoints setzen, Code triggern, 🎯 Debug!
+```
+
+### PROD (nur Image, kein live mount)
+
+```bash
+docker compose -f docker-compose.yml up --build -d
 ```
 
 ---
