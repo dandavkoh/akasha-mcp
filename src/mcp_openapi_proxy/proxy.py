@@ -1,6 +1,7 @@
 import os, sys
 import json
 from typing import Dict, Any
+import mcp.types as types
 
 from fastapi import FastAPI, Body
 from fastapi.middleware.cors import CORSMiddleware
@@ -20,6 +21,52 @@ if os.environ.get("DEV_MODE") == "true" and os.environ.get("PYCHARM_HOSTED", "0"
             #debugpy.wait_for_client()
         except Exception:
             pass
+
+# -----------------------------
+# Helper function to parse MCP tool results robustly
+# -----------------------------
+def parse_mcp_result(raw: Any) -> Any:
+    """
+    Safely extract the "real" value from MCP tool output.
+
+    Handles:
+      - tuple: (TextContent list, {'result': ...})
+      - dict with 'result'
+      - single TextContent
+      - plain value (str, int, etc.)
+      - JSON-encoded strings
+    """
+    
+    # Step 1: Unwrap tuple (common MCP client return)
+    if isinstance(raw, tuple) and len(raw) == 2:
+        raw = raw[1]  # take the structured Python return value
+    
+    # Step 2: If dict with 'result', extract it
+    if isinstance(raw, dict) and 'result' in raw:
+        value = raw['result']
+    else:
+        value = raw
+
+    # Step 3: If value is a list of TextContent, join text
+    if isinstance(value, list) and all(hasattr(v, 'text') for v in value):
+        text = "".join(v.text for v in value)
+        value = text
+
+    # Step 4: If value is a TextContent object itself
+    if hasattr(value, 'text'):
+        value = value.text
+
+    # Step 5: Attempt JSON decode if looks like JSON
+    if isinstance(value, str):
+        value = value.strip()
+        if (value.startswith('{') and value.endswith('}')) or \
+           (value.startswith('[') and value.endswith(']')):
+            try:
+                value = json.loads(value)
+            except json.JSONDecodeError:
+                pass  # keep as string if invalid JSON
+
+    return value
 
 # -----------------------------
 # FastAPI App global for uvicorn --reload
@@ -103,21 +150,8 @@ async def create_dynamic_endpoints(app: FastAPI):
                 args = form_data.model_dump()
                 result = await mcp.call_tool(endpoint_name, args)
 
-                # robust against Tuple or ToolCallResult
-                if isinstance(result, tuple):
-                    content_list = result[0]  # first element is the actual content list
-                else:
-                    content_list = getattr(result, "content", [])
-
                 response = []
-                for content in content_list:
-                    text = getattr(content, "text", content)  # if content is directly a string
-                    if isinstance(text, str):
-                        try:
-                            text = json.loads(text)
-                        except json.JSONDecodeError:
-                            pass
-                    response.append(text)
+                response.append(parse_mcp_result(result))
 
                 return response
 
@@ -152,7 +186,7 @@ def parse_args():
 
 
 # -----------------------------
-# Optionaler Embedded Start
+# Optional Embedded Start
 # -----------------------------
 if __name__ == "__main__":
     args = parse_args()

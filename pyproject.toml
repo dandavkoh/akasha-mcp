@@ -1,5 +1,5 @@
 [project]
-name = "mcpo-mcp-stack"
+name = "akasha-mcp"
 version = "0.0.19"
 description = "A simple MCP-to-OpenAPI proxy server with embedded mcp"
 authors = [
@@ -15,7 +15,7 @@ dependencies = [
     "python-multipart>=0.0.6",
     "mcp>=0.4.0",
 
-    # RAG / NAS dependencies
+    # Tool dependencies
     "sentence-transformers>=2.2.2",
     "langchain>=0.1.0",
     "langchain-core>=0.1.0",
