@@ -141,20 +141,20 @@ ms-vscode-remote.remote-containers
 1. Container läuft?
 
 ```bash
-docker ps | grep mcpo_mcp_stack
+docker ps | grep akasha-mcp
 ```
 
 2. Debug-Port offen?
 
 ```bash
-docker port mcpo_mcp_stack
+docker port akasha-mcp
 # sollte zeigen: 5678/tcp -> 0.0.0.0:5678
 ```
 
 3. debugpy gestartet?
 
 ```bash
-docker logs mcpo_mcp_stack | grep "Debugger listening"
+docker logs akasha-mcp | grep "Debugger listening"
 ```
 
 ---
@@ -177,8 +177,8 @@ docker logs mcpo_mcp_stack | grep "Debugger listening"
 ### ❓ Welcher Code läuft gerade?
 
 ```bash
-docker exec mcpo_mcp_stack ls -la /app/src
-docker exec mcpo_mcp_stack cat /app/src/mcp/server.py | head -20
+docker exec akasha-mcp ls -la /app/src
+docker exec akasha-mcp cat /app/src/mcp/server.py | head -20
 ```
 
 ---
