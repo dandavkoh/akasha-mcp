@@ -1,9 +1,10 @@
 import os, sys
 import json
 from typing import Dict, Any
+from urllib import request
 import mcp.types as types
 
-from fastapi import FastAPI, Body
+from fastapi import FastAPI, Body, Request
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import create_model
 
@@ -146,8 +147,27 @@ async def create_dynamic_endpoints(app: FastAPI):
 
         # Create endpoint function
         def make_endpoint_func(endpoint_name: str, FormModel):
-            async def tool_endpoint(form_data: FormModel):
+            async def tool_endpoint(form_data: FormModel, request: Request):
                 args = form_data.model_dump()
+
+                authorization = request.headers.get("authorization")
+                user_id = request.headers.get("x-openwebui-user-id")
+                user_email = request.headers.get("x-openwebui-user-email")
+                user_name = request.headers.get("x-openwebui-user-name")
+                user_role = request.headers.get("x-openwebui-user-role")
+                chat_id = request.headers.get("x-openwebui-chat-id")
+                message_id = request.headers.get("x-openwebui-message-id")
+
+                args["user_context"] = {
+                    "authorization": authorization[7:] if authorization and authorization.startswith("Bearer ") else "",
+                    "user_id": user_id or "",
+                    "user_email": user_email or "",
+                    "user_name": user_name or "",
+                    "user_role": user_role or "",
+                    "chat_id": chat_id or "",
+                    "message_id": message_id or ""
+                }
+
                 result = await mcp.call_tool(endpoint_name, args)
 
                 response = []

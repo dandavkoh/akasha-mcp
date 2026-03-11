@@ -10,14 +10,15 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     && rm -rf /var/lib/apt/lists/*
 
 # Docling dependencies (for NAS indexing)
-# RUN apt-get update && apt-get install -y \
-#     libxcb1 \
-#     libx11-6 \
-#     libxext6 \
-#     libsm6 \
-#     libice6 \
-#     libgl1 \
-#  && rm -rf /var/lib/apt/lists/*
+RUN apt-get update && apt-get install -y \
+    libxcb1 \
+    libx11-6 \
+    libxext6 \
+    libsm6 \
+    libice6 \
+    libgl1 \
+    acl \
+ && rm -rf /var/lib/apt/lists/*
 
 # Copy the source code (assuming in src/) and change to the app directory
 COPY . /app

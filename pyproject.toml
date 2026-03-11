@@ -34,6 +34,16 @@ dependencies = [
     # Document parsing
     "docling>=0.1.0",
 
+    # OCR runtime (for scanned PDFs)
+    "rapidocr-onnxruntime>=1.3",
+    "onnxruntime>=1.16",
+    "easyocr>=1.7",
+    "opencv-python>=4.8",
+    "pillow>=10.0",
+
+    # LDAP/Active Directory
+    "ldap3>=2.9.1",
+
     # Utilities
     "tqdm>=4.66",
 
