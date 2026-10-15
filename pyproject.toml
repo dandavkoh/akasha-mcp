@@ -1,5 +1,5 @@
 [project]
-name = "mcpo-mcp-stack"
+name = "akasha-mcp"
 version = "0.0.19"
 description = "A simple MCP-to-OpenAPI proxy server with embedded mcp"
 authors = [
@@ -15,14 +15,37 @@ dependencies = [
     "python-multipart>=0.0.6",
     "mcp>=0.4.0",
 
-    # RAG / NAS dependencies
+    # AI / ML runtime
+    "torch>=2.1",
     "sentence-transformers>=2.2.2",
+    "tokenizers>=0.15",
+    "accelerate>=0.28",
+
+    # LangChain ecosystem
     "langchain>=0.1.0",
     "langchain-core>=0.1.0",
     "langchain-community>=0.0.30",
+    "langchain-chroma>=0.1.0",
     "langchain-text-splitters>=0.0.1",
+
+    # Vector DB
     "chromadb>=0.4.0",
+
+    # Document parsing
     "docling>=0.1.0",
+
+    # OCR runtime (for scanned PDFs)
+    "rapidocr-onnxruntime>=1.3",
+    "onnxruntime>=1.16",
+    "easyocr>=1.7",
+    "opencv-python>=4.8",
+    "pillow>=10.0",
+
+    # LDAP/Active Directory
+    "ldap3>=2.9.1",
+
+    # Utilities
+    "tqdm>=4.66",
 
     # Debug
     "debugpy>=1.6.7",
